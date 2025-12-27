@@ -2,29 +2,18 @@ pipeline {
     agent any
 
     stages {
-        stage('Detect Target OS') {
+        stage('Deploy using Ansible') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'ubuntu') {
-                        env.TARGET_OS = 'ubuntu'
+                        sh "ansible-playbook ansible/playbook.yml -i ansible/inventory --limit ubuntu"
                     } else if (env.BRANCH_NAME == 'amazon') {
-                        env.TARGET_OS = 'amazon'
+                        sh "ansible-playbook ansible/playbook.yml -i ansible/inventory --limit amazon"
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
                     }
                 }
             }
         }
-
-        stage('Deploy using Ansible') {
-            steps {
-                sh """
-                ansible-playbook ansible/playbook.yml \
-                -i ansible/inventory \
-                -e target_os=${TARGET_OS}
-                """
-            }
-        }
     }
 }
-
